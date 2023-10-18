@@ -49,7 +49,7 @@ int main() {
             }
         } else {
             Sleep(1000);
-            printf("\n1. Consult Account\n2. Add\n3. Substract\n4. Log out\n5. Exit\nChoose an option: ");
+            printf("\n1. Consult Account\n2. Add\n3. Substract\n4. Remove Account\n4. Log out\n5. Exit\nChoose an option: ");
             scanf("%d", &choix);
 
             switch (choix) {
@@ -66,11 +66,14 @@ int main() {
                     Sleep(1000);
                     break;
                 case 4:
+                    Sleep(1000);
+                    break;
+                case 5:
                     printf("Disconnection in progress...\n");
                     Sleep(1500);
                     connected = 0;
                     break;
-                case 5:
+                case 6: 
                     printf("Thank you for using our service. Goodbye!\n");
                     return 0; // Quitter de manière propre
                 default:

@@ -5,8 +5,8 @@ Ce projet de programmation en langage C vise à simuler un système bancaire sim
 Liste des Fonctions
 Créer un compte ✓
 Se connecter à son compte ✓
-Retirer de l'argent 
-Déposer de l'argent 
+Retirer de l'argent ✓
+Déposer de l'argent ✓
 Consulter le solde ✓
 Clôturer le compte 
 Modifier le nom d'utilisateur/mot de passe

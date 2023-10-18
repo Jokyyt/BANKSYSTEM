@@ -206,6 +206,7 @@ void addsolde(User *user, double amount) {
     scanf("%lf", &amount);
     user->solde += amount; 
     printf("New solde: %.2f $\n", user->solde);
+    mettreAjourDonneesUtilisateur(user);
 }
 
 void subtractsolde(User *user, double amount) {
@@ -214,6 +215,71 @@ void subtractsolde(User *user, double amount) {
     scanf("%lf", &amount);
     user->solde -= amount;
     printf("New solde: %.2f $\n", user->solde);
+    mettreAjourDonneesUtilisateur(user);
+}
+
+void mettreAjourDonneesUtilisateur(User *user) {
+    FILE *fichier = fopen("DATA/users.json", "r+");
+
+    if (fichier == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        return;
+    }
+
+    fseek(fichier, 0, SEEK_END);
+    long fsize = ftell(fichier);
+    fseek(fichier, 0, SEEK_SET);
+
+    char *json_str = (char *)malloc(fsize + 1);
+    fread(json_str, 1, fsize, fichier);
+    fclose(fichier);
+    json_str[fsize] = 0;
+
+    cJSON *root = cJSON_Parse(json_str);
+    free(json_str);
+
+    if (!root) {
+        cJSON_Delete(root);
+        perror("Erreur d'analyse JSON");
+        return;
+    }
+
+    cJSON *userArray = cJSON_GetObjectItem(root, "users");
+    if (!userArray) {
+        cJSON_Delete(root);
+        perror("Erreur lors de la récupération du tableau d'utilisateurs depuis le JSON");
+        return;
+    }
+
+    for (int i = 0; i < cJSON_GetArraySize(userArray); i++) {
+        cJSON *userObj = cJSON_GetArrayItem(userArray, i);
+        const char *storedUsername = cJSON_GetObjectItem(userObj, "username")->valuestring;
+
+        if (strcmp(user->username, storedUsername) == 0) {
+            cJSON_ReplaceItemInObject(userObj, "solde", cJSON_CreateNumber(user->solde));
+
+            fichier = fopen("DATA/users.json", "w");
+
+            if (fichier == NULL) {
+                cJSON_Delete(root);
+                perror("Erreur lors de l'ouverture du fichier en écriture");
+                return;
+            }
+
+            if (fprintf(fichier, "%s", cJSON_Print(root)) < 0) {
+                perror("Erreur d'écriture dans le fichier");
+                fclose(fichier);
+                cJSON_Delete(root);
+                return;
+            }
+
+            fclose(fichier);
+            cJSON_Delete(root);
+            return;
+        }
+    }
+
+    cJSON_Delete(root);
 }
 
 
