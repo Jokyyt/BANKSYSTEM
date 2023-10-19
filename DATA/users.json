@@ -1,20 +1,8 @@
 {
 	"users":	[{
-			"username":	"sandro",
-			"password":	"mannina",
-			"solde":	0
-		}, {
 			"username":	"sach",
 			"password":	"dudu",
-			"solde":	0
-		}, {
-			"username":	"test",
-			"password":	"test",
-			"solde":	97
-		}, {
-			"username":	"hello",
-			"password":	"world",
-			"solde":	0
+			"solde":	220
 		}, {
 			"username":	"haha",
 			"password":	"hello",
@@ -22,10 +10,6 @@
 		}, {
 			"username":	"test1",
 			"password":	"test1",
-			"solde":	0
-		}, {
-			"username":	"azert",
-			"password":	"y",
 			"solde":	0
 		}, {
 			"username":	"salut",

@@ -15,5 +15,6 @@ void get_infos(User *user);
 void updateDataUser(User *user); 
 void addsolde(User *user, double amount);
 void subtractsolde(User *user, double amount);
+int deleteUser(User *user);
 
 #endif
