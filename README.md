@@ -9,7 +9,8 @@ Retirer de l'argent ✓ ==> subtractsolde()
 Déposer de l'argent ✓ ==> addsolde()
 Consulter le solde ✓ ==> get_infos()
 Clôturer le compte ✓ ==> deleteUser()
+Confirmer son choix ✓ ==> confirm_choice()
 Modifier le nom d'utilisateur/mot de passe
 Effectuer des virements entre comptes
-Générateur d'ID pour chaque compte
+Générateur d'ID pour chaque compte 
 Vérifier l'existence de noms d'utilisateur/mots de passe déjà utilisés ==> checkInfos()

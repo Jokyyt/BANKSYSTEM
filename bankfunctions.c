@@ -7,14 +7,24 @@
 #include <stdbool.h>
 #include "Librairies\cJSON\cJSON.h"
 
+// Définir des constantes pour les noms de fichiers
+#define JSON_FILE_PATH "DATA/users.json"
+
+// Définir des constantes pour les messages d'erreur
+#define ERROR_OPEN_FILE "Error opening file"
+#define ERROR_PARSING_JSON "Error parsing JSON"
+#define ERROR_GETTING_USER_ARRAY "Error getting user array from JSON"
+#define ERROR_WRITING_FILE "Error writing to file"
+#define ERROR_OPEN_FILE_WRITE "Error opening file for writing"
+
 // FONCTIONS DE GESTION BANCAIRE
 
-// CREER UN COMPTE
+
 int createAccount(User *user) {
-    FILE *fichier = fopen("DATA/users.json", "r+");
+    FILE *fichier = fopen(JSON_FILE_PATH, "r+");
 
     if (fichier == NULL) {
-        perror("Error opening file");
+        perror(ERROR_OPEN_FILE);
         return 1;
     }
 
@@ -36,7 +46,7 @@ int createAccount(User *user) {
 
     if (!root) {
         cJSON_Delete(root);
-        perror("Error parsing JSON");
+        perror("ERROR_PARSING_JSON");
         return -1;
     }
 
@@ -45,7 +55,7 @@ int createAccount(User *user) {
 
     if (!userArray) {
         cJSON_Delete(root);
-        perror("Error getting user array from JSON");
+        perror(ERROR_GETTING_USER_ARRAY);
         return -1;
     }
 
@@ -75,15 +85,15 @@ int createAccount(User *user) {
 
             cJSON_AddItemToArray(cJSON_GetObjectItem(root, "users"), newUser);
 
-            fichier = fopen("DATA/users.json", "w"); // Réouvrir en mode écriture
+            fichier = fopen(JSON_FILE_PATH, "w"); // Réouvrir en mode écriture
             if (fichier == NULL) {
-                perror("Error opening file for writing");
+                perror(ERROR_OPEN_FILE_WRITE);
                 cJSON_Delete(root);
                 return 2;
             }
 
             if (fprintf(fichier, "%s", cJSON_Print(root)) < 0) {
-                perror("Error writing to file");
+                perror(ERROR_WRITING_FILE);
                 fclose(fichier);
                 cJSON_Delete(root);
                 return 2;
@@ -96,21 +106,16 @@ int createAccount(User *user) {
     cJSON_Delete(root); // Libérer la mémoire de l'objet cJSON
 
     printf("Account created successfully!\n");
-    /*
-    printf("Username: %s\n", cJSON_GetObjectItem(newUser, "username")->valuestring);
-    printf("Password: %s\n", cJSON_GetObjectItem(newUser, "password")->valuestring);
-    printf("Solde: %f\n", cJSON_GetObjectItem(newUser, "solde")->valuedouble);
-    */
     return 0;
 }
 
 
 
 int checkInfos(User *user, const char *username, const char *password) {
-    FILE *fichier = fopen("DATA/users.json", "r");
+    FILE *fichier = fopen(JSON_FILE_PATH, "r");
 
     if (fichier == NULL) {
-        perror("Error opening file");
+        perror(ERROR_OPEN_FILE);
         return -1;
     }
 
@@ -129,14 +134,14 @@ int checkInfos(User *user, const char *username, const char *password) {
 
     if (!root) {
         cJSON_Delete(root);
-        perror("Error parsing JSON");
+        perror(ERROR_PARSING_JSON);
         return -1;
     }
 
     cJSON *userArray = cJSON_GetObjectItem(root, "users");
     if (!userArray) {
         cJSON_Delete(root);
-        perror("Error getting user array from JSON");
+        perror(ERROR_GETTING_USER_ARRAY);
         return -1;
     }
 
@@ -166,14 +171,15 @@ int checkInfos(User *user, const char *username, const char *password) {
 }
 
 
+
 int Login(User *user) {
     char input_username[50];
     char input_password[50];
 
     printf("Enter your username: ");
-    scanf("%s", input_username);
+    scanf("%49s", input_username);
     printf("Enter your password: ");
-    scanf("%s", input_password);
+    scanf("%49s", input_password);
     
     int userFoundResult = checkInfos(user, input_username, input_password);
     
@@ -194,11 +200,14 @@ int Login(User *user) {
     
 }
 
+
+
 void get_infos(User *user) {
     printf("Username: %s\n", user->username);
     printf("Password: %s\n", user->password);
     printf("Solde: %.2f $\n", user->solde);
 }
+
 
 
 void addsolde(User *user, double amount) {
@@ -207,20 +216,22 @@ void addsolde(User *user, double amount) {
     scanf("%lf", &amount);
     user->solde += amount; 
     printf("New solde: %.2f $\n", user->solde);
-    updateDataUser(user);
+    updateSoldeUser(user);
 }
 
+
+
 void subtractsolde(User *user, double amount) {
-    printf("Solde: %.2f $\n", user->solde - amount);
+    printf("Solde: %.2f $\n", user->solde);
     printf("How much would you like to subtract? --> ");
     scanf("%lf", &amount);
     user->solde -= amount;
     printf("New solde: %.2f $\n", user->solde);
-    updateDataUser(user);
+    updateSoldeUser(user);
 }
 
-void updateDataUser(User *user) {
-    FILE *fichier = fopen("DATA/users.json", "r+");
+void updateSoldeUser(User *user) {
+    FILE *fichier = fopen(JSON_FILE_PATH, "r+");
 
     if (fichier == NULL) {
         perror("Erreur lors de l'ouverture du fichier");
@@ -259,7 +270,7 @@ void updateDataUser(User *user) {
         if (strcmp(user->username, storedUsername) == 0) {
             cJSON_ReplaceItemInObject(userObj, "solde", cJSON_CreateNumber(user->solde));
 
-            fichier = fopen("DATA/users.json", "w");
+            fichier = fopen(JSON_FILE_PATH, "w");
 
             if (fichier == NULL) {
                 cJSON_Delete(root);
@@ -279,16 +290,18 @@ void updateDataUser(User *user) {
             return;
         }
     }
-
+    
     cJSON_Delete(root);
+    perror("Utilisateur non trouvé dans le fichier JSON. Mise à jour du solde échouée.");
 }
 
 
+
 void deleteUser(User *user) {
-    FILE *fichier = fopen("DATA/users.json", "r+");
+    FILE *fichier = fopen(JSON_FILE_PATH, "r+");
 
     if (fichier == NULL) {
-        perror("Error opening file");
+        perror(ERROR_OPEN_FILE);
         return;
     }
 
@@ -310,7 +323,7 @@ void deleteUser(User *user) {
 
     if (!root) {
         cJSON_Delete(root);
-        perror("Error parsing JSON");
+        perror(ERROR_PARSING_JSON);
         return;
     }
 
@@ -318,7 +331,7 @@ void deleteUser(User *user) {
 
     if (!userArray) {
         cJSON_Delete(root);
-        perror("Error getting user array from JSON");
+        perror(ERROR_GETTING_USER_ARRAY);
         return;
     }
 
@@ -330,16 +343,16 @@ void deleteUser(User *user) {
             if (confirm_choice()) {
                 cJSON_DeleteItemFromArray(userArray, i);
 
-                fichier = fopen("DATA/users.json", "w");
+                fichier = fopen(JSON_FILE_PATH, "w");
 
                 if (fichier == NULL) {
                     cJSON_Delete(root);
-                    perror("Error opening file for writing");
+                    perror(ERROR_OPEN_FILE_WRITE);
                     return;
                 }
 
                 if (fprintf(fichier, "%s", cJSON_Print(root)) < 0) {
-                    perror("Error writing to file");
+                    perror(ERROR_WRITING_FILE);
                     fclose(fichier);
                     cJSON_Delete(root);
                     return;
@@ -355,6 +368,7 @@ void deleteUser(User *user) {
 
     printf("User not found in the JSON file. Deletion failed.\n");
 }
+
 
 
 bool confirm_choice() {
