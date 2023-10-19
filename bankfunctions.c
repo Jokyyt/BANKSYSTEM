@@ -4,6 +4,7 @@
 #include <string.h>
 #include <windows.h>
 #include <errno.h>
+#include <stdbool.h>
 #include "Librairies\cJSON\cJSON.h"
 
 // FONCTIONS DE GESTION BANCAIRE
@@ -283,12 +284,12 @@ void updateDataUser(User *user) {
 }
 
 
-int deleteUser(User *user) {
+void deleteUser(User *user) {
     FILE *fichier = fopen("DATA/users.json", "r+");
 
     if (fichier == NULL) {
         perror("Error opening file");
-        return 1;
+        return;
     }
 
     cJSON *root;
@@ -310,7 +311,7 @@ int deleteUser(User *user) {
     if (!root) {
         cJSON_Delete(root);
         perror("Error parsing JSON");
-        return 2;
+        return;
     }
 
     cJSON *userArray = cJSON_GetObjectItem(root, "users");
@@ -318,7 +319,7 @@ int deleteUser(User *user) {
     if (!userArray) {
         cJSON_Delete(root);
         perror("Error getting user array from JSON");
-        return 2;
+        return;
     }
 
     for (int i = 0; i < cJSON_GetArraySize(userArray); i++) {
@@ -326,31 +327,55 @@ int deleteUser(User *user) {
         const char *storedUsername = cJSON_GetObjectItem(userObj, "username")->valuestring;
 
         if (strcmp(user->username, storedUsername) == 0) {
-            cJSON_DeleteItemFromArray(userArray, i);
+            if (confirm_choice()) {
+                cJSON_DeleteItemFromArray(userArray, i);
 
-            fichier = fopen("DATA/users.json", "w");
+                fichier = fopen("DATA/users.json", "w");
 
-            if (fichier == NULL) {
-                cJSON_Delete(root);
-                perror("Error opening file for writing");
-                return 3;
-            }
+                if (fichier == NULL) {
+                    cJSON_Delete(root);
+                    perror("Error opening file for writing");
+                    return;
+                }
 
-            if (fprintf(fichier, "%s", cJSON_Print(root)) < 0) {
-                perror("Error writing to file");
+                if (fprintf(fichier, "%s", cJSON_Print(root)) < 0) {
+                    perror("Error writing to file");
+                    fclose(fichier);
+                    cJSON_Delete(root);
+                    return;
+                }
+
                 fclose(fichier);
                 cJSON_Delete(root);
-                return 4;
+                printf("User deleted successfully!\n");
+                return;
             }
-
-            fclose(fichier);
-            cJSON_Delete(root);
-            printf("User deleted successfully!\n");
-            return 0;
         }
     }
 
     printf("User not found in the JSON file. Deletion failed.\n");
-    return -1;
 }
 
+
+bool confirm_choice() {
+    char choice[10];
+    int tentatives = 0;
+    
+    while (tentatives < 3) {
+        printf("Are you sure you want to continue? (y/n) --> ");
+        scanf("%s", choice);
+        
+        if (strcmp(choice, "y") == 0 || strcmp(choice, "Y") == 0 || strcmp(choice, "yes") == 0 || strcmp(choice, "Yes") == 0 || strcmp(choice, "YES") == 0) {
+            return true;
+        } else if (strcmp(choice, "n") == 0 || strcmp(choice, "N") == 0 || strcmp(choice, "no") == 0 || strcmp(choice, "No") == 0 || strcmp(choice, "NO") == 0) {
+            return false;
+        } else {
+            printf("Invalid choice. Please try again.\n");
+            tentatives++;
+        }
+    }
+
+    printf("Too many attempts. Return to menu.\n");
+    return false;
+
+}
