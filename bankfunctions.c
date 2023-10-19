@@ -291,77 +291,66 @@ int deleteUser(User *user) {
         return 1;
     }
 
-    char username_input[50];
-    char password_input[50];
+    cJSON *root;
+    long fsize;
+    char *json_str = NULL;
 
-    printf("Enter the username to delete: ");
-    scanf("%49s", username_input);
-    printf("Enter the password for confirmation: ");
-    scanf("%49s", password_input);
+    fseek(fichier, 0, SEEK_END);
+    fsize = ftell(fichier);
+    fseek(fichier, 0, SEEK_SET);
 
-    int userExistsResult = checkInfos(user, username_input, password_input);
+    json_str = (char *)malloc(fsize + 1);
+    fread(json_str, 1, fsize, fichier);
+    fclose(fichier);
+    json_str[fsize] = 0;
 
-    if (userExistsResult == 3) {
-        cJSON *root;
-        long fsize;
-        char *json_str = NULL;
+    root = cJSON_Parse(json_str);
+    free(json_str);
 
-        fseek(fichier, 0, SEEK_END);
-        fsize = ftell(fichier);
-        fseek(fichier, 0, SEEK_SET);
+    if (!root) {
+        cJSON_Delete(root);
+        perror("Error parsing JSON");
+        return 2;
+    }
 
-        json_str = (char *)malloc(fsize + 1);
-        fread(json_str, 1, fsize, fichier);
-        fclose(fichier);
-        json_str[fsize] = 0;
+    cJSON *userArray = cJSON_GetObjectItem(root, "users");
 
-        root = cJSON_Parse(json_str);
-        free(json_str);
+    if (!userArray) {
+        cJSON_Delete(root);
+        perror("Error getting user array from JSON");
+        return 2;
+    }
 
-        if (!root) {
-            cJSON_Delete(root);
-            perror("Error parsing JSON");
-            return 2;
-        }
+    for (int i = 0; i < cJSON_GetArraySize(userArray); i++) {
+        cJSON *userObj = cJSON_GetArrayItem(userArray, i);
+        const char *storedUsername = cJSON_GetObjectItem(userObj, "username")->valuestring;
 
-        cJSON *userArray = cJSON_GetObjectItem(root, "users");
+        if (strcmp(user->username, storedUsername) == 0) {
+            cJSON_DeleteItemFromArray(userArray, i);
 
-        if (!userArray) {
-            cJSON_Delete(root);
-            perror("Error getting user array from JSON");
-            return 2;
-        }
+            fichier = fopen("DATA/users.json", "w");
 
-        for (int i = 0; i < cJSON_GetArraySize(userArray); i++) {
-            cJSON *userObj = cJSON_GetArrayItem(userArray, i);
-            const char *storedUsername = cJSON_GetObjectItem(userObj, "username")->valuestring;
+            if (fichier == NULL) {
+                cJSON_Delete(root);
+                perror("Error opening file for writing");
+                return 3;
+            }
 
-            if (strcmp(username_input, storedUsername) == 0) {
-                cJSON_DeleteItemFromArray(userArray, i);
-
-                fichier = fopen("DATA/users.json", "w");
-
-                if (fichier == NULL) {
-                    cJSON_Delete(root);
-                    perror("Error opening file for writing");
-                    return 3;
-                }
-
-                if (fprintf(fichier, "%s", cJSON_Print(root)) < 0) {
-                    perror("Error writing to file");
-                    fclose(fichier);
-                    cJSON_Delete(root);
-                    return 4;
-                }
-
+            if (fprintf(fichier, "%s", cJSON_Print(root)) < 0) {
+                perror("Error writing to file");
                 fclose(fichier);
                 cJSON_Delete(root);
-                printf("User deleted successfully!\n");
-                return 0;
+                return 4;
             }
+
+            fclose(fichier);
+            cJSON_Delete(root);
+            printf("User deleted successfully!\n");
+            return 0;
         }
-    } else {
-        printf("Username and/or password are incorrect. Deletion failed.\n");
-        return -1;
     }
+
+    printf("User not found in the JSON file. Deletion failed.\n");
+    return -1;
 }
+
