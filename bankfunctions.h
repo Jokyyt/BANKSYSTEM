@@ -12,6 +12,7 @@ typedef struct User {
 
 // Déclarez vos fonctions
 bool confirm_choice();
+bool verif_username_len(const char *username);
 bool verif_password(const char *password);
 int createAccount(User *user);
 int checkInfos(User *user, const char *username, const char *password);

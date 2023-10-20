@@ -16,8 +16,18 @@
 #define ERROR_GETTING_USER_ARRAY "Error getting user array from JSON"
 #define ERROR_WRITING_FILE "Error writing to file"
 #define ERROR_OPEN_FILE_WRITE "Error opening file for writing"
+#define ERROR_PASSWORD_REQUIREMENTS "Password requirements: At least 8 characters, including one uppercase letter, one digit, and one symbol\n"
+#define ERROR_USERNAME_REQUIREMENTS "User name requirements: Length must be between 3 and 20 characters\n"
 
 
+bool verif_username_len(const char *username) {
+    int longueur = strlen(username);
+    if (longueur < 3 || longueur > 20) {
+        return false;
+    }
+    return true;
+
+}
 
 bool verif_password(const char *password) {
     int longueur = strlen(password);
@@ -57,8 +67,8 @@ int createAccount(User *user) {
         return 1;
     }
 
-    char username_input[50];
-    char password_input[50];
+    char username_input[21];
+    char password_input[21];
     int userExistsResult = 0; // Initialisation du résultat de vérification
 
     fseek(fichier, 0, SEEK_END);
@@ -92,16 +102,25 @@ int createAccount(User *user) {
     cJSON *newUser = cJSON_CreateObject();
 
     do {
-        printf("USERNAME : ");
-        scanf("%49s", username_input);
+
+        do {
+            printf("USERNAME : ");
+            scanf("%s", username_input);
+
+            // Vérifier si le mot de passe respecte les règles
+            if (!verif_username_len(username_input)) {
+                printf(ERROR_USERNAME_REQUIREMENTS);
+            }
+        } while (!verif_username_len(username_input)); // Continuer de demander le username tant qu'il n'est pas valide
         
+
         do {
             printf("PASSWORD : ");
             scanf("%49s", password_input);
 
             // Vérifier si le mot de passe respecte les règles
             if (!verif_password(password_input)) {
-                printf("Password requirements: At least 8 characters, including one uppercase letter, one digit, and one symbol.\n");
+                printf(ERROR_PASSWORD_REQUIREMENTS);
             }
         } while (!verif_password(password_input)); // Continuer de demander le mot de passe tant qu'il n'est pas valide
 

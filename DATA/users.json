@@ -1,31 +1,7 @@
 {
 	"users":	[{
-			"username":	"sach",
-			"password":	"dudu",
-			"solde":	220
-		}, {
-			"username":	"haha",
-			"password":	"hello",
-			"solde":	0
-		}, {
-			"username":	"salut",
-			"password":	"france",
-			"solde":	0
-		}, {
-			"username":	"papa",
-			"password":	"sacha",
-			"solde":	0
-		}, {
-			"username":	"joeyjoey",
-			"password":	"Joeylebgdu20$!",
-			"solde":	0
-		}, {
-			"username":	"kak",
-			"password":	"ACMilan2004$",
-			"solde":	0
-		}, {
-			"username":	"nina",
-			"password":	"probLme23*",
+			"username":	"tarte",
+			"password":	"Tarter4!",
 			"solde":	0
 		}]
 }
