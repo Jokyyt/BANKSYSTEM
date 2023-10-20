@@ -60,12 +60,8 @@ int main() {
                     break;
 
                 case 2:
-                    addsolde(&currentUser, 0);
-                    Sleep(1000);
-                    break;
-
-                case 3:
-                    subtractsolde(&currentUser, 0);
+                    
+                    transferMoney(&currentUser);
                     Sleep(1000);
                     break;
 

@@ -27,8 +27,8 @@ void get_infos(User *user);
 void updateSoldeUser(User *user);
 
 // Fonctions de gestion du solde
-void addsolde(User *user, double amount);
-void subtractsolde(User *user, double amount);
+int getUserByID(User *user, const char *userID);
+int transferMoney(User *sender, const char *receiverID);
 
 // Fonctions d'administration du compte
 void deleteUser(User *user);

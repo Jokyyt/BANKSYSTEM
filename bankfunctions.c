@@ -268,6 +268,101 @@ int checkInfos(User *user, const char *username, const char *password) {
 
 // FONCTIONS DE GESTION DU COMPTE UTILISATEUR  
 
+// Fonction pour transférer de l'argent entre utilisateurs
+void transferMoney(User *sender, const char *receiverID) {
+    double amount = 0;
+    printf("How many do you want to transfer? ");
+    if (scanf("%lf", &amount) == 1) {
+        // L'entrée est un double valide
+        printf("You entered: %.2f\n", amount);
+    } else {
+        // L'entrée n'est pas un double valide
+        printf("Invalid input. Please enter a valid number.\n");
+        return;  // Sortir de la fonction en cas d'entrée invalide
+    }
+
+    // Vérifier si l'utilisateur émetteur a suffisamment de solde pour le transfert
+    if (sender->solde < amount) {
+        printf("Solde insuffisant pour le transfert.\n");
+        return;  // Sortir de la fonction en cas de solde insuffisant
+    }
+
+    // Rechercher l'utilisateur destinataire par son ID
+    User receiver;
+    if (getUserByID(&receiver, receiverID) == 0) {
+        printf("Destinataire introuvable avec l'ID fourni.\n");
+        return;  // Sortir de la fonction en cas d'utilisateur destinataire introuvable
+    }
+
+    // Effectuer le transfert
+    sender->solde -= amount;
+    receiver.solde += amount;
+
+    // Mettre à jour les soldes dans le fichier JSON
+    updateSoldeUser(sender);
+    updateSoldeUser(&receiver);
+
+    printf("Transfert réussi. Nouveau solde pour %s : %.2f $\n", sender->username, sender->solde);
+}
+
+
+// Fonction pour récupérer un utilisateur par son ID
+int getUserByID(User *user, const char *userID) {
+    FILE *fichier = fopen(JSON_FILE_PATH, "r");
+
+    if (fichier == NULL) {
+        perror(ERROR_OPEN_FILE);
+        return -1;
+    }
+
+    char *json_str = NULL;
+    fseek(fichier, 0, SEEK_END);
+    long fsize = ftell(fichier);
+    fseek(fichier, 0, SEEK_SET);
+
+    json_str = (char *)malloc(fsize + 1);
+    fread(json_str, 1, fsize, fichier);
+    fclose(fichier);
+    json_str[fsize] = 0;
+
+    cJSON *root = cJSON_Parse(json_str);
+    free(json_str);
+
+    if (!root) {
+        cJSON_Delete(root);
+        perror(ERROR_PARSING_JSON);
+        return -1;
+    }
+
+    cJSON *userArray = cJSON_GetObjectItem(root, "users");
+    if (!userArray) {
+        cJSON_Delete(root);
+        perror(ERROR_GETTING_USER_ARRAY);
+        return -1;
+    }
+
+    for (int i = 0; i < cJSON_GetArraySize(userArray); i++) {
+        cJSON *userObj = cJSON_GetArrayItem(userArray, i);
+        const char *storedUserID = cJSON_GetObjectItem(userObj, "ID")->valuestring;
+
+        if (strcmp(userID, storedUserID) == 0) {
+            const char *storedUsername = cJSON_GetObjectItem(userObj, "username")->valuestring;
+            const char *storedPassword = cJSON_GetObjectItem(userObj, "password")->valuestring;
+            double solde = cJSON_GetObjectItem(userObj, "solde")->valuedouble;
+
+            user->username = strdup(storedUsername);
+            user->password = strdup(storedPassword);
+            user->solde = solde;
+            cJSON_Delete(root);
+            return 0; // Succès
+        }
+    }
+
+    cJSON_Delete(root);
+    return 1; // ID non trouvé
+}
+
+
 
 // Fonction d'affichage des informations de l'utilisateur
 void get_infos(User *user) {
@@ -276,27 +371,6 @@ void get_infos(User *user) {
     printf("Solde: %.2f $\n", user->solde);
 }
 
-
-// Fonction d'ajout de solde à un compte
-void addsolde(User *user, double amount) {
-    printf("Solde: %.2f $\n", user->solde);
-    printf("How much would you like to add? --> ");
-    scanf("%lf", &amount);
-    user->solde += amount; 
-    printf("New solde: %.2f $\n", user->solde);
-    updateSoldeUser(user);
-}
-
-
-// Fonction de soustraction de solde d'un compte
-void subtractsolde(User *user, double amount) {
-    printf("Solde: %.2f $\n", user->solde);
-    printf("How much would you like to subtract? --> ");
-    scanf("%lf", &amount);
-    user->solde -= amount;
-    printf("New solde: %.2f $\n", user->solde);
-    updateSoldeUser(user);
-}
 
 
 // Fonction de mise à jour du solde de l'utilisateur dans le fichier JSON
