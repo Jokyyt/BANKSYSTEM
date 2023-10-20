@@ -10,7 +10,7 @@ Déposer de l'argent ✓ ==> addsolde()
 Consulter le solde ✓ ==> get_infos()
 Clôturer le compte ✓ ==> deleteUser()
 Confirmer son choix ✓ ==> confirm_choice()
-Restriction sur les inputs (username, password) 
-Effectuer des virements entre comptes 
-Générateur d'ID pour chaque compte 
-Vérifier l'existence de noms d'utilisateur/mots de passe déjà utilisés ==> checkInfos()
+Restriction sur les inputs (username, password) ✓ ==> verif_username_len() / verif_password()
+Vérifier l'existence de noms d'utilisateur/mots de passe déjà utilisés ✓ ==> checkInfos()
+Effectuer des virements entre comptes (futur option)
+Générateur d'ID pour chaque compte (futut option)

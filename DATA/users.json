@@ -1,7 +1,12 @@
 {
 	"users":	[{
-			"username":	"tarte",
-			"password":	"Tarter4!",
+			"username":	"username1",
+			"password":	"Password1$",
 			"solde":	0
-		}]
+		}, {
+			"username":	"username2",
+			"password":	"Password2@",
+			"solde":	0
+		}
+	]
 }

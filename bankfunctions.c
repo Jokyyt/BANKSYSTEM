@@ -20,6 +20,11 @@
 #define ERROR_USERNAME_REQUIREMENTS "User name requirements: Length must be between 3 and 20 characters\n"
 
 
+
+// FONCTIONS DE VERIFICATIONS
+
+
+// Fonction de vérification de la longueur du nom d'utilisateur
 bool verif_username_len(const char *username) {
     int longueur = strlen(username);
     if (longueur < 3 || longueur > 20) {
@@ -29,6 +34,7 @@ bool verif_username_len(const char *username) {
 
 }
 
+// Fonction de vérification du mot de passe
 bool verif_password(const char *password) {
     int longueur = strlen(password);
     bool majuscule_presente = false;
@@ -56,7 +62,8 @@ bool verif_password(const char *password) {
 }
 
 
-// FONCTIONS DE GESTION BANCAIRE
+
+// FONCTIONS DE GESTION DES UTILISATEURS 
 
 
 int createAccount(User *user) {
@@ -164,8 +171,37 @@ int createAccount(User *user) {
 }
 
 
+// Fonction de connexion de l'utilisateur
+int Login(User *user) {
+    char input_username[50];
+    char input_password[50];
+
+    printf("Enter your username: ");
+    scanf("%49s", input_username);
+    printf("Enter your password: ");
+    scanf("%49s", input_password);
+    
+    int userFoundResult = checkInfos(user, input_username, input_password);
+    
+    if (userFoundResult == 3) {
+        user->username = strdup(input_username); // Assurez-vous d'allouer de la mémoire pour le champ username
+        user->password = strdup(input_password); // Assurez-vous d'allouer de la mémoire pour le champ password
+        return 0;
+    } else if (userFoundResult == 1) {
+        printf("Le username existe, mais le password n'existe pas.");
+        return 1;
+        
+    } else if (userFoundResult == 2) {
+        printf("Le password existe, mais le username n'existe pas.");
+        return 2;
+    } else {
+        return 3;
+    }
+    
+}
 
 
+// Fonction de vérification des informations de l'utilisateur
 int checkInfos(User *user, const char *username, const char *password) {
     FILE *fichier = fopen(JSON_FILE_PATH, "r");
 
@@ -227,36 +263,10 @@ int checkInfos(User *user, const char *username, const char *password) {
 
 
 
-int Login(User *user) {
-    char input_username[50];
-    char input_password[50];
-
-    printf("Enter your username: ");
-    scanf("%49s", input_username);
-    printf("Enter your password: ");
-    scanf("%49s", input_password);
-    
-    int userFoundResult = checkInfos(user, input_username, input_password);
-    
-    if (userFoundResult == 3) {
-        user->username = strdup(input_username); // Assurez-vous d'allouer de la mémoire pour le champ username
-        user->password = strdup(input_password); // Assurez-vous d'allouer de la mémoire pour le champ password
-        return 0;
-    } else if (userFoundResult == 1) {
-        printf("Le username existe, mais le password n'existe pas.");
-        return 1;
-        
-    } else if (userFoundResult == 2) {
-        printf("Le password existe, mais le username n'existe pas.");
-        return 2;
-    } else {
-        return 3;
-    }
-    
-}
+// FONCTIONS DE GESTION DU COMPTE UTILISATEUR  
 
 
-
+// Fonction d'affichage des informations de l'utilisateur
 void get_infos(User *user) {
     printf("Username: %s\n", user->username);
     printf("Password: %s\n", user->password);
@@ -264,7 +274,7 @@ void get_infos(User *user) {
 }
 
 
-
+// Fonction d'ajout de solde à un compte
 void addsolde(User *user, double amount) {
     printf("Solde: %.2f $\n", user->solde);
     printf("How much would you like to add? --> ");
@@ -275,7 +285,7 @@ void addsolde(User *user, double amount) {
 }
 
 
-
+// Fonction de soustraction de solde d'un compte
 void subtractsolde(User *user, double amount) {
     printf("Solde: %.2f $\n", user->solde);
     printf("How much would you like to subtract? --> ");
@@ -285,6 +295,8 @@ void subtractsolde(User *user, double amount) {
     updateSoldeUser(user);
 }
 
+
+// Fonction de mise à jour du solde de l'utilisateur dans le fichier JSON
 void updateSoldeUser(User *user) {
     FILE *fichier = fopen(JSON_FILE_PATH, "r+");
 
@@ -351,7 +363,7 @@ void updateSoldeUser(User *user) {
 }
 
 
-
+// Fonction de suppression d'utilisateur
 void deleteUser(User *user) {
     FILE *fichier = fopen(JSON_FILE_PATH, "r+");
 
@@ -426,6 +438,9 @@ void deleteUser(User *user) {
 
 
 
+// FONCTION D'UTILITE GENERALE
+
+// Fonction de confirmation de choix
 bool confirm_choice() {
     char choice[10];
     int tentatives = 0;
