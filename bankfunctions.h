@@ -5,10 +5,15 @@
 #include "Librairies\cJSON\cJSON.h"
 
 typedef struct User {
+    char *ID;
     char *username;
     char *password;
     double solde;
 } User;
+
+// User constructor
+int checkID(char *ID);
+char *generateRandomID();
 
 // Fonctions de vérification
 bool verif_username_len(const char *username);

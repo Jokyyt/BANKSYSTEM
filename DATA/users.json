@@ -1,12 +1,8 @@
 {
 	"users":	[{
-			"username":	"username1",
-			"password":	"Password1$",
-			"solde":	0
-		}, {
-			"username":	"username2",
-			"password":	"Password2@",
-			"solde":	0
-		}
-	]
+			"ID":	"5ZY4HSUI",
+			"username":	"joeyjoey",
+			"password":	"JoeyJoey20!",
+			"solde":	20
+		}]
 }

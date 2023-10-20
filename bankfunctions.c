@@ -9,12 +9,13 @@
 
 // Définir des constantes pour les noms de fichiers
 #define JSON_FILE_PATH "DATA/users.json"
+#define ID_USED_FILE_PATH "DATA/id_used.txt"
 
 // Définir des constantes pour les messages d'erreur
 #define ERROR_OPEN_FILE "Error opening file"
 #define ERROR_PARSING_JSON "Error parsing JSON"
 #define ERROR_GETTING_USER_ARRAY "Error getting user array from JSON"
-#define ERROR_WRITING_FILE "Error writing to file"
+#define ERROR_WRITING_FILE "Error writing to file\n"
 #define ERROR_OPEN_FILE_WRITE "Error opening file for writing"
 #define ERROR_PASSWORD_REQUIREMENTS "Password requirements: At least 8 characters, including one uppercase letter, one digit, and one symbol\n"
 #define ERROR_USERNAME_REQUIREMENTS "User name requirements: Length must be between 3 and 20 characters\n"
@@ -138,9 +139,11 @@ int createAccount(User *user) {
         if (userExistsResult == 0) {
             user->username = strdup(username_input);
             user->password = strdup(password_input);
+            cJSON_AddStringToObject(newUser, "ID", generateRandomID());
             cJSON_AddStringToObject(newUser, "username", username_input);
             cJSON_AddStringToObject(newUser, "password", password_input);
             cJSON_AddNumberToObject(newUser, "solde", 0.0); // Solde initial à 0
+            
 
             cJSON_AddItemToArray(cJSON_GetObjectItem(root, "users"), newUser);
 
@@ -461,5 +464,66 @@ bool confirm_choice() {
 
     printf("Too many attempts. Return to menu.\n");
     return false;
+
+}
+
+// Fonction pour générer un ID aléatoire de longueur 8
+char *generateRandomID() {
+    static const char charset[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    char *randomID = (char *)malloc(9 * sizeof(char)); // 8 caractères + 1 pour le caractère nul
+
+    if (randomID) {
+        for (int i = 0; i < 8; i++) {
+            int index = rand() % (sizeof(charset) - 1);
+            randomID[i] = charset[index];
+        }
+        randomID[8] = '\0';  // Terminer la chaîne
+    }
+
+    if (checkID(randomID) == 1) {;
+        free(randomID);
+        return generateRandomID();
+
+    } else {
+        // ID est unique, ajoutons-le au fichier
+        FILE *fichier;
+        fichier = fopen(ID_USED_FILE_PATH, "a"); // Mode "a" pour ajouter à la fin du fichier
+
+        if (fichier == NULL) {
+            perror(ERROR_WRITING_FILE);
+            return -1;
+        }
+
+        // Écrire le nouvel ID dans le fichier
+        fprintf(fichier, "%s\n", randomID);
+
+        fclose(fichier); // Fermer le fichier après avoir ajouté l'ID
+    }
+    return randomID;
+}
+
+
+
+int checkID(char *ID) {
+
+    FILE *fichier;
+    fichier = fopen(ID_USED_FILE_PATH, "r"); 
+
+    if (fichier == NULL) {
+        perror(ERROR_OPEN_FILE);
+        return -1;
+    }
+
+    char ligne[100]; // Vous pouvez ajuster la taille en fonction de vos besoins
+
+    while (fgets(ligne, sizeof(ligne), fichier) != NULL) {
+        if (strcmp(ID, ligne) == 0) {
+            fclose(fichier);
+            return 1;
+        }
+    }
+
+    fclose(fichier); // Fermer le fichier après utilisation
+    return 0;
 
 }
