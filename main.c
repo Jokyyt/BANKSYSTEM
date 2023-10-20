@@ -10,7 +10,6 @@
 
 int main() {
     User currentUser;
-    cJSON *jsonRoot = loadJSON(); // Ajout de la variable cJSON pour stocker le root du JSON
     int choix;
     int connected = 0; // 0 signifie que l'utilisateur n'est pas connecté
 
@@ -43,8 +42,6 @@ int main() {
                         return 0;
                     }
                 case 3:
-                    saveJSON(jsonRoot); // Enregistrez les modifications dans le fichier
-                    cJSON_Delete(jsonRoot); // Assurez-vous de libérer la mémoire du cJSON root
                     printf("Thank you for using our service. Goodbye!\n");
                     return 0; // Quitter de manière propre
                 default:
@@ -53,7 +50,7 @@ int main() {
             }
         } else {
             Sleep(1000);
-            printf("\n1. Consult Account\n2. Add\n3. Substract\n4. Log out\n5. Exit\n6. Delete\n7. Edit\nChoose an option (number) : ");
+            printf("\n1. Consult Account\n2. Add\n3. Substract\n4. Log out\n5. Exit\n6. Delete\nChoose an option (number) : ");
             scanf("%d", &choix);
 
             switch (choix) {
@@ -82,9 +79,6 @@ int main() {
                     connected = 0; // Déconnecter l'utilisateur après la suppression
                     printf("You are now logged out.\n");
                     Sleep(1000);
-                    break;
-                case 7:
-                    // editInfosUser function here 
                     break;
                 default:
                     printf("Invalid option. Try again.\n");

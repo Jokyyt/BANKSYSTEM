@@ -12,8 +12,7 @@ typedef struct User {
 
 // Déclarez vos fonctions
 bool confirm_choice();
-void saveChanges(cJSON *root);
-void editInfosUser(User *user, cJSON *root);
+bool verif_password(const char *password);
 int createAccount(User *user);
 int checkInfos(User *user, const char *username, const char *password);
 int Login(User *user);

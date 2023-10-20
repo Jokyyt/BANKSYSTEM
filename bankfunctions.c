@@ -17,6 +17,35 @@
 #define ERROR_WRITING_FILE "Error writing to file"
 #define ERROR_OPEN_FILE_WRITE "Error opening file for writing"
 
+
+
+bool verif_password(const char *password) {
+    int longueur = strlen(password);
+    bool majuscule_presente = false;
+    bool chiffre_present = false;
+    bool symbole_present = false;
+    char symboles[] = "!@#$%^&*(),.?\"':;{}|<>";
+
+    if (longueur < 8 || longueur > 20) {
+        return false;
+    }
+
+    for (int i = 0; i < longueur; i++) {
+        char caractere = password[i];
+
+        if (caractere >= 'A' && caractere <= 'Z') {
+            majuscule_presente = true;
+        } else if (caractere >= '0' && caractere <= '9') {
+            chiffre_present = true;
+        } else if (strchr(symboles, caractere) != NULL) {
+            symbole_present = true;
+        }
+    }
+
+    return majuscule_presente && chiffre_present && symbole_present;
+}
+
+
 // FONCTIONS DE GESTION BANCAIRE
 
 
@@ -35,18 +64,18 @@ int createAccount(User *user) {
     fseek(fichier, 0, SEEK_END);
     long fsize = ftell(fichier);
     fseek(fichier, 0, SEEK_SET);
-    
+
     char *json_str = (char *)malloc(fsize + 1);
     fread(json_str, 1, fsize, fichier);
     fclose(fichier);
     json_str[fsize] = 0;
-    
+
     cJSON *root = cJSON_Parse(json_str);
     free(json_str);
 
     if (!root) {
         cJSON_Delete(root);
-        perror("ERROR_PARSING_JSON");
+        perror(ERROR_PARSING_JSON);
         return -1;
     }
 
@@ -65,18 +94,22 @@ int createAccount(User *user) {
     do {
         printf("USERNAME : ");
         scanf("%49s", username_input);
-        printf("PASSWORD : ");
-        scanf("%49s", password_input);
+        
+        do {
+            printf("PASSWORD : ");
+            scanf("%49s", password_input);
+
+            // Vérifier si le mot de passe respecte les règles
+            if (!verif_password(password_input)) {
+                printf("Password requirements: At least 8 characters, including one uppercase letter, one digit, and one symbol.\n");
+            }
+        } while (!verif_password(password_input)); // Continuer de demander le mot de passe tant qu'il n'est pas valide
 
         userExistsResult = checkInfos(user, username_input, password_input);
 
-        if (userExistsResult == 3) {
-            printf("Username and/or password already exist. Please choose different values.\n");
-        } else if (userExistsResult == 1) {
-            printf("Username already exists. Please choose a different username.\n");
-        } else if (userExistsResult == 2) {
-            printf("Password already exists. Please choose a different password.\n");
-        } else {
+        // ... (code pour vérifier l'existence de l'utilisateur, comme vous l'avez déjà)
+
+        if (userExistsResult == 0) {
             user->username = strdup(username_input);
             user->password = strdup(password_input);
             cJSON_AddStringToObject(newUser, "username", username_input);
@@ -100,14 +133,17 @@ int createAccount(User *user) {
             }
 
             fclose(fichier);
+
+            cJSON_Delete(root); // Libérer la mémoire de l'objet cJSON
+
+            printf("Account created successfully!\n");
+            return 0; // Ou tout autre code de succès que vous préférez
         }
     } while (userExistsResult != 0);
 
-    cJSON_Delete(root); // Libérer la mémoire de l'objet cJSON
-
-    printf("Account created successfully!\n");
-    return 0;
+    return -1; // Ajoutez un code d'erreur si vous sortez de la boucle pour une autre raison
 }
+
 
 
 
