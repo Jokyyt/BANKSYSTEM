@@ -50,7 +50,7 @@ int main() {
             }
         } else {
             Sleep(1000);
-            printf("\n1. Consult Account\n2. Add\n3. Subtract\n4. Log out\n5. Exit\n6. Delete\nChoose an option (number) : ");
+            printf("\n1. Consult Account\n2.\n3. Log out\n4. Exit\n5. Delete\nChoose an option (number) : ");
             scanf("%d", &choix);
 
             switch (choix) {
@@ -60,22 +60,21 @@ int main() {
                     break;
 
                 case 2:
-                    
                     transferMoney(&currentUser);
                     Sleep(1000);
-                    break;
+                    break; 
 
-                case 4: // Option pour la déconnexion
+                case 3: // Option pour la déconnexion
                     printf("Disconnection in progress...\n");
                     Sleep(1500);
                     connected = 0;
                     break;
 
-                case 5:
+                case 4:
                     printf("Thank you for using our service. Goodbye!\n");
                     return 0; // Quitter de manière propre
 
-                case 6: // Option pour supprimer un utilisateur
+                case 5: // Option pour supprimer un utilisateur
                     deleteUser(&currentUser);
                     connected = 0; // Déconnecter l'utilisateur après la suppression
                     printf("You are now logged out.\n");

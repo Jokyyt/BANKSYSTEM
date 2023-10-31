@@ -268,61 +268,24 @@ int checkInfos(User *user, const char *username, const char *password) {
 
 // FONCTIONS DE GESTION DU COMPTE UTILISATEUR  
 
-// Fonction pour transférer de l'argent entre utilisateurs
-void transferMoney(User *sender, const char *receiverID) {
-    double amount = 0;
-    printf("How many do you want to transfer? ");
-    if (scanf("%lf", &amount) == 1) {
-        // L'entrée est un double valide
-        printf("You entered: %.2f\n", amount);
-    } else {
-        // L'entrée n'est pas un double valide
-        printf("Invalid input. Please enter a valid number.\n");
-        return;  // Sortir de la fonction en cas d'entrée invalide
-    }
+int transferMoney(User *user) {
+    // Utiliser l'ID de l'utilisateur connecté comme émetteur
+    const char *senderID = user->ID;
 
-    // Vérifier si l'utilisateur émetteur a suffisamment de solde pour le transfert
-    if (sender->solde < amount) {
-        printf("Solde insuffisant pour le transfert.\n");
-        return;  // Sortir de la fonction en cas de solde insuffisant
-    }
+    FILE *file = fopen(JSON_FILE_PATH, "r+");
 
-    // Rechercher l'utilisateur destinataire par son ID
-    User receiver;
-    if (getUserByID(&receiver, receiverID) == 0) {
-        printf("Destinataire introuvable avec l'ID fourni.\n");
-        return;  // Sortir de la fonction en cas d'utilisateur destinataire introuvable
-    }
-
-    // Effectuer le transfert
-    sender->solde -= amount;
-    receiver.solde += amount;
-
-    // Mettre à jour les soldes dans le fichier JSON
-    updateSoldeUser(sender);
-    updateSoldeUser(&receiver);
-
-    printf("Transfert réussi. Nouveau solde pour %s : %.2f $\n", sender->username, sender->solde);
-}
-
-
-// Fonction pour récupérer un utilisateur par son ID
-int getUserByID(User *user, const char *userID) {
-    FILE *fichier = fopen(JSON_FILE_PATH, "r");
-
-    if (fichier == NULL) {
+    if (file == NULL) {
         perror(ERROR_OPEN_FILE);
         return -1;
     }
 
-    char *json_str = NULL;
-    fseek(fichier, 0, SEEK_END);
-    long fsize = ftell(fichier);
-    fseek(fichier, 0, SEEK_SET);
+    fseek(file, 0, SEEK_END);
+    long fsize = ftell(file);
+    fseek(file, 0, SEEK_SET);
 
-    json_str = (char *)malloc(fsize + 1);
-    fread(json_str, 1, fsize, fichier);
-    fclose(fichier);
+    char *json_str = (char *)malloc(fsize + 1);
+    fread(json_str, 1, fsize, file);
+    fclose(file);
     json_str[fsize] = 0;
 
     cJSON *root = cJSON_Parse(json_str);
@@ -335,31 +298,88 @@ int getUserByID(User *user, const char *userID) {
     }
 
     cJSON *userArray = cJSON_GetObjectItem(root, "users");
+
     if (!userArray) {
         cJSON_Delete(root);
         perror(ERROR_GETTING_USER_ARRAY);
         return -1;
     }
 
+    char receiverID[9];
+    double amount;
+
+    printf("Enter receiver's ID: ");
+    scanf("%s", receiverID);
+    printf("Enter the amount to transfer: ");
+    scanf("%lf", &amount);
+
+    // Recherche de l'utilisateur connecté par son ID
+    cJSON *senderUser = NULL;
+    double senderBalance = 0.0; // Initialisez à 0 par défaut
+
     for (int i = 0; i < cJSON_GetArraySize(userArray); i++) {
         cJSON *userObj = cJSON_GetArrayItem(userArray, i);
-        const char *storedUserID = cJSON_GetObjectItem(userObj, "ID")->valuestring;
+        const char *userID = cJSON_GetObjectItem(userObj, "ID")->valuestring;
 
-        if (strcmp(userID, storedUserID) == 0) {
-            const char *storedUsername = cJSON_GetObjectItem(userObj, "username")->valuestring;
-            const char *storedPassword = cJSON_GetObjectItem(userObj, "password")->valuestring;
-            double solde = cJSON_GetObjectItem(userObj, "solde")->valuedouble;
-
-            user->username = strdup(storedUsername);
-            user->password = strdup(storedPassword);
-            user->solde = solde;
-            cJSON_Delete(root);
-            return 0; // Succès
+        if (strcmp(senderID, userID) == 0) {
+            senderUser = userObj;
+            cJSON *senderSolde = cJSON_GetObjectItem(senderUser, "solde");
+            senderBalance = senderSolde->valuedouble;
+            break;
         }
     }
 
+    // Vérifier si le montant est valide et si l'émetteur a suffisamment de solde
+    if (amount <= 0 || senderBalance < (amount + 0.00001)) { // Vérification avec une marge d'erreur
+        cJSON_Delete(root);
+        printf("Invalid amount or insufficient balance.\n");
+        return -1;
+    }
+
+    // Recherche du destinataire par son ID
+    cJSON *receiverUser = NULL;
+
+    for (int i = 0; i < cJSON_GetArraySize(userArray); i++) {
+        cJSON *userObj = cJSON_GetArrayItem(userArray, i);
+        const char *userID = cJSON_GetObjectItem(userObj, "ID")->valuestring;
+
+        if (strcmp(receiverID, userID) == 0) {
+            receiverUser = userObj;
+            break;
+        }
+    }
+
+    if (receiverUser == NULL) {
+        cJSON_Delete(root);
+        printf("Receiver not found.\n");
+        return -1;
+    }
+
+    // Mettre à jour les soldes du sender et du receiver
+    cJSON *senderSolde = cJSON_GetObjectItem(senderUser, "solde");
+    cJSON *receiverSolde = cJSON_GetObjectItem(receiverUser, "solde");
+
+    senderSolde->valuedouble = senderBalance - amount;
+    receiverSolde->valuedouble = receiverSolde->valuedouble + amount;
+
+    // Écrire les modifications dans le fichier JSON
+    file = fopen(JSON_FILE_PATH, "w");
+
+    if (file == NULL) {
+        cJSON_Delete(root);
+        perror(ERROR_OPEN_FILE);
+        return -1;
+    }
+
+    if (fprintf(file, "%s", cJSON_Print(root)) < 0) {
+        perror(ERROR_WRITING_FILE);
+    }
+
+    fclose(file);
     cJSON_Delete(root);
-    return 1; // ID non trouvé
+    printf("Transfer completed successfully.\n");
+
+    return 0;
 }
 
 
@@ -554,10 +574,10 @@ char *generateRandomID() {
         randomID[8] = '\0';  // Terminer la chaîne
     }
 
-    if (checkID(randomID) == 1) {;
+    // Vérifier si l'ID généré est déjà utilisé
+    if (checkID(randomID) == 1) {
         free(randomID);
-        return generateRandomID();
-
+        return generateRandomID(); // Générer un nouvel ID
     } else {
         // ID est unique, ajoutons-le au fichier
         FILE *fichier;
@@ -565,7 +585,7 @@ char *generateRandomID() {
 
         if (fichier == NULL) {
             perror(ERROR_WRITING_FILE);
-            return -1;
+            return NULL;
         }
 
         // Écrire le nouvel ID dans le fichier
@@ -577,11 +597,9 @@ char *generateRandomID() {
 }
 
 
-
-int checkID(char *ID) {
-
+int checkID(const char *ID) {
     FILE *fichier;
-    fichier = fopen(ID_USED_FILE_PATH, "r"); 
+    fichier = fopen(ID_USED_FILE_PATH, "r");
 
     if (fichier == NULL) {
         perror(ERROR_OPEN_FILE);
@@ -591,13 +609,13 @@ int checkID(char *ID) {
     char ligne[100]; // Vous pouvez ajuster la taille en fonction de vos besoins
 
     while (fgets(ligne, sizeof(ligne), fichier) != NULL) {
+        ligne[strlen(ligne) - 1] = '\0'; // Supprimer le saut de ligne
         if (strcmp(ID, ligne) == 0) {
             fclose(fichier);
-            return 1;
+            return 1; // L'ID est déjà utilisé
         }
     }
 
     fclose(fichier); // Fermer le fichier après utilisation
-    return 0;
-
+    return 0; // L'ID est disponible
 }

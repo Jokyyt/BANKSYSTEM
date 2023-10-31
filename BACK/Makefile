@@ -10,8 +10,11 @@ SOURCES = main.c bankfunctions.c
 # Noms des fichiers objets générés
 OBJECTS = $(SOURCES:.c=.o)
 
-# Nom du binaire final
-EXECUTABLE = myprogram
+# Nom du binaire final avec extension .exe
+EXECUTABLE = bank_program.exe
+
+# Nom du binaire final sans extension .exe
+EXECUTABLE_WITHOUT_EXT = bank_program
 
 # Chemin vers l'en-tête cJSON
 CJSON_INCLUDE = -I./Librairies/cJSON
@@ -20,11 +23,12 @@ CJSON_INCLUDE = -I./Librairies/cJSON
 CJSON_LIB = -L./Librairies/cJSON -lcjson
 
 # Règle par défaut
-all: $(EXECUTABLE)
+all: $(EXECUTABLE_WITHOUT_EXT)
 
-# Compilation du binaire
-$(EXECUTABLE): $(OBJECTS)
-	$(CC) $(CFLAGS) $(CJSON_INCLUDE) -o $@ $^ $(CJSON_LIB)
+# Compilation du binaire sans extension .exe
+$(EXECUTABLE_WITHOUT_EXT): $(OBJECTS)
+	$(CC) $(CFLAGS) $(CJSON_INCLUDE) -o $(EXECUTABLE) $^ $(CJSON_LIB)
+	@if [ -f $(EXECUTABLE) ]; then mv $(EXECUTABLE) $(EXECUTABLE_WITHOUT_EXT); fi
 
 # Compilation des fichiers objets
 %.o: %.c
@@ -32,5 +36,4 @@ $(EXECUTABLE): $(OBJECTS)
 
 # Nettoyage des fichiers objets et du binaire
 clean:
-	rm -f $(OBJECTS) $(EXECUTABLE)
-	
+	rm -f $(OBJECTS) $(EXECUTABLE_WITHOUT_EXT)

@@ -12,7 +12,7 @@ typedef struct User {
 } User;
 
 // User constructor
-int checkID(char *ID);
+int checkID(const char *ID);
 char *generateRandomID();
 
 // Fonctions de vérification
@@ -27,8 +27,7 @@ void get_infos(User *user);
 void updateSoldeUser(User *user);
 
 // Fonctions de gestion du solde
-int getUserByID(User *user, const char *userID);
-int transferMoney(User *sender, const char *receiverID);
+int transferMoney(User *user);
 
 // Fonctions d'administration du compte
 void deleteUser(User *user);
