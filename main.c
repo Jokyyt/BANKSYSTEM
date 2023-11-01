@@ -60,7 +60,7 @@ int main() {
                     break;
 
                 case 2:
-                    transferMoney(&currentUser);
+                    transferAmountBetweenUsers();
                     Sleep(1000);
                     break; 
 

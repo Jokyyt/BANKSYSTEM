@@ -264,28 +264,23 @@ int checkInfos(User *user, const char *username, const char *password) {
     return 0; // Ni le username ni le password n'existent pas dans la base de données.
 }
 
+// Fonction pour charger un utilisateur à partir de son ID
+int loadUserByID(User *user, const char *userID) {
+    FILE *fichier = fopen(JSON_FILE_PATH, "r");
 
-
-// FONCTIONS DE GESTION DU COMPTE UTILISATEUR  
-
-int transferMoney(User *user) {
-    // Utiliser l'ID de l'utilisateur connecté comme émetteur
-    const char *senderID = user->ID;
-
-    FILE *file = fopen(JSON_FILE_PATH, "r+");
-
-    if (file == NULL) {
+    if (fichier == NULL) {
         perror(ERROR_OPEN_FILE);
-        return -1;
+        return 0; // Échec du chargement de l'utilisateur
     }
 
-    fseek(file, 0, SEEK_END);
-    long fsize = ftell(file);
-    fseek(file, 0, SEEK_SET);
+    char *json_str = NULL;
+    fseek(fichier, 0, SEEK_END);
+    long fsize = ftell(fichier);
+    fseek(fichier, 0, SEEK_SET);
 
-    char *json_str = (char *)malloc(fsize + 1);
-    fread(json_str, 1, fsize, file);
-    fclose(file);
+    json_str = (char *)malloc(fsize + 1);
+    fread(json_str, 1, fsize, fichier);
+    fclose(fichier);
     json_str[fsize] = 0;
 
     cJSON *root = cJSON_Parse(json_str);
@@ -294,93 +289,78 @@ int transferMoney(User *user) {
     if (!root) {
         cJSON_Delete(root);
         perror(ERROR_PARSING_JSON);
-        return -1;
+        return 0; // Échec du chargement de l'utilisateur
     }
 
     cJSON *userArray = cJSON_GetObjectItem(root, "users");
-
     if (!userArray) {
         cJSON_Delete(root);
         perror(ERROR_GETTING_USER_ARRAY);
-        return -1;
+        return 0; // Échec du chargement de l'utilisateur
     }
-
-    char receiverID[9];
-    double amount;
-
-    printf("Enter receiver's ID: ");
-    scanf("%s", receiverID);
-    printf("Enter the amount to transfer: ");
-    scanf("%lf", &amount);
-
-    // Recherche de l'utilisateur connecté par son ID
-    cJSON *senderUser = NULL;
-    double senderBalance = 0.0; // Initialisez à 0 par défaut
 
     for (int i = 0; i < cJSON_GetArraySize(userArray); i++) {
         cJSON *userObj = cJSON_GetArrayItem(userArray, i);
-        const char *userID = cJSON_GetObjectItem(userObj, "ID")->valuestring;
+        const char *storedID = cJSON_GetObjectItem(userObj, "ID")->valuestring;
 
-        if (strcmp(senderID, userID) == 0) {
-            senderUser = userObj;
-            cJSON *senderSolde = cJSON_GetObjectItem(senderUser, "solde");
-            senderBalance = senderSolde->valuedouble;
-            break;
+        if (strcmp(userID, storedID) == 0) {
+            user->username = strdup(cJSON_GetObjectItem(userObj, "username")->valuestring);
+            user->password = strdup(cJSON_GetObjectItem(userObj, "password")->valuestring);
+            user->solde = cJSON_GetObjectItem(userObj, "solde")->valuedouble;
+            user->ID = strdup(cJSON_GetObjectItem(userObj, "ID")->valuestring);
+
+            cJSON_Delete(root);
+            return 1; // Succès du chargement de l'utilisateur
         }
     }
 
-    // Vérifier si le montant est valide et si l'émetteur a suffisamment de solde
-    if (amount <= 0 || senderBalance < (amount + 0.00001)) { // Vérification avec une marge d'erreur
-        cJSON_Delete(root);
-        printf("Invalid amount or insufficient balance.\n");
-        return -1;
-    }
-
-    // Recherche du destinataire par son ID
-    cJSON *receiverUser = NULL;
-
-    for (int i = 0; i < cJSON_GetArraySize(userArray); i++) {
-        cJSON *userObj = cJSON_GetArrayItem(userArray, i);
-        const char *userID = cJSON_GetObjectItem(userObj, "ID")->valuestring;
-
-        if (strcmp(receiverID, userID) == 0) {
-            receiverUser = userObj;
-            break;
-        }
-    }
-
-    if (receiverUser == NULL) {
-        cJSON_Delete(root);
-        printf("Receiver not found.\n");
-        return -1;
-    }
-
-    // Mettre à jour les soldes du sender et du receiver
-    cJSON *senderSolde = cJSON_GetObjectItem(senderUser, "solde");
-    cJSON *receiverSolde = cJSON_GetObjectItem(receiverUser, "solde");
-
-    senderSolde->valuedouble = senderBalance - amount;
-    receiverSolde->valuedouble = receiverSolde->valuedouble + amount;
-
-    // Écrire les modifications dans le fichier JSON
-    file = fopen(JSON_FILE_PATH, "w");
-
-    if (file == NULL) {
-        cJSON_Delete(root);
-        perror(ERROR_OPEN_FILE);
-        return -1;
-    }
-
-    if (fprintf(file, "%s", cJSON_Print(root)) < 0) {
-        perror(ERROR_WRITING_FILE);
-    }
-
-    fclose(file);
     cJSON_Delete(root);
-    printf("Transfer completed successfully.\n");
-
-    return 0;
+    return 0; // Échec du chargement de l'utilisateur, l'ID n'a pas été trouvé
 }
+
+// FONCTIONS DE GESTION DU COMPTE UTILISATEUR  
+
+int transferAmountBetweenUsers() {
+    User sender, receiver;
+    float amount;
+    char senderID[9], receiverID[9];
+
+    printf("Enter the sender's ID: ");
+    scanf("%8s", senderID);
+
+    printf("Enter the receiver's ID: ");
+    scanf("%8s", receiverID);
+
+    // Charger les détails de l'expéditeur et du destinataire à partir du fichier JSON en utilisant leurs ID
+    if (loadUserByID(&sender, senderID) && loadUserByID(&receiver, receiverID)) {
+        printf("Enter the amount to transfer: ");
+        scanf("%f", &amount);
+
+        // Appel de la fonction de transfert
+        return transfer(&sender, &receiver, amount);
+    } else {
+        printf("One or both users were not found.\n");
+        return -1;
+    }
+}
+
+int transfer(User *sender, User *receiver, float amount) {
+    if (sender->solde >= amount) {
+        sender->solde -= amount;
+        receiver->solde += amount;
+
+        // Mettre à jour les soldes des utilisateurs dans le fichier JSON
+        updateSoldeUser(sender);
+        updateSoldeUser(receiver);
+
+        printf("Transfert de %.2f $ de %s à %s effectué avec succès.\n", amount, sender->username, receiver->username);
+        return 0; // Succès
+    } else {
+        printf("Solde insuffisant pour effectuer ce transfert.\n");
+        return -1; // Échec du transfert
+    }
+}
+
 
 
 
