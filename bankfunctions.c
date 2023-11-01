@@ -353,10 +353,10 @@ int transfer(User *sender, User *receiver, float amount) {
         updateSoldeUser(sender);
         updateSoldeUser(receiver);
 
-        printf("Transfert de %.2f $ de %s à %s effectué avec succès.\n", amount, sender->username, receiver->username);
+        printf("Transfer of %.2f $ from %s to %s completed successfully.\n", amount, sender->username, receiver->username);
         return 0; // Succès
     } else {
-        printf("Solde insuffisant pour effectuer ce transfert.\n");
+        printf("Insufficient balance to complete this transfer.\n");
         return -1; // Échec du transfert
     }
 }
