@@ -402,21 +402,28 @@ int transfer(User *sender, User *receiver, float amount) {
 
 // Fonction d'affichage des informations de l'utilisateur
 void get_infos(User *user) {
-    printf("--------------------------------\n");
-    printf("----------- MY INFOS -----------\n");
-    printf("--------------------------------\n");
-    printf("MY ID: %s\n", user->ID);
-    printf("USERNAME: %s\n", user->username);
-    printf("PASSWORD: %s\n", user->password);
-    printf("SOLDE: %.2f $\n", user->solde);
-    printf("\nPress ENTER to return to Home Menu...");
-    getch();  // Attend que l'utilisateur appuie sur Enter
+    User tempUser;
+    if (loadUserByID(&tempUser, user->ID)) {
+        printf("--------------------------------\n");
+        printf("----------- MY INFOS -----------\n");
+        printf("--------------------------------\n");
+        printf("MY ID: %s\n", tempUser.ID);
+        printf("USERNAME: %s\n", tempUser.username);
+        printf("PASSWORD: %s\n", tempUser.password);
+        printf("SOLDE: %.2f $\n", tempUser.solde);
+        printf("\nPress ENTER to return to Home Menu...");
+        getch();  // Attend que l'utilisateur appuie sur Enter
+    } else {
+        printf("User not found.\n");
+    }
 }
 
 
 
 // Fonction de mise à jour du solde de l'utilisateur dans le fichier JSON
 void updateSoldeUser(User *user) {
+    cJSON *root = NULL;
+
     FILE *fichier = fopen(JSON_FILE_PATH, "r+");
 
     if (fichier == NULL) {
@@ -433,7 +440,7 @@ void updateSoldeUser(User *user) {
     fclose(fichier);
     json_str[fsize] = 0;
 
-    cJSON *root = cJSON_Parse(json_str);
+    root = cJSON_Parse(json_str);
     free(json_str);
 
     if (!root) {
@@ -451,9 +458,9 @@ void updateSoldeUser(User *user) {
 
     for (int i = 0; i < cJSON_GetArraySize(userArray); i++) {
         cJSON *userObj = cJSON_GetArrayItem(userArray, i);
-        const char *storedUsername = cJSON_GetObjectItem(userObj, "username")->valuestring;
+        const char *storedID = cJSON_GetObjectItem(userObj, "ID")->valuestring;
 
-        if (strcmp(user->username, storedUsername) == 0) {
+        if (strcmp(user->ID, storedID) == 0) {
             cJSON_ReplaceItemInObject(userObj, "solde", cJSON_CreateNumber(user->solde));
 
             fichier = fopen(JSON_FILE_PATH, "w");
@@ -480,6 +487,7 @@ void updateSoldeUser(User *user) {
     cJSON_Delete(root);
     perror("Utilisateur non trouvé dans le fichier JSON. Mise à jour du solde échouée.");
 }
+
 
 
 // Fonction de suppression d'utilisateur
