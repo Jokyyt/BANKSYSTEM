@@ -71,6 +71,7 @@ int main() {
                 case 2:
                     if (createAccount(&currentUser) == 0) {
                         Sleep(1000);
+                        connected = 1;
                     } else {
                         Sleep(1000);
                         printf("Account creation error\n");
@@ -93,12 +94,10 @@ int main() {
             switch (choix) {
                 case 1:
                     get_infos(&currentUser);
-                    Sleep(1000);
                     break;
 
                 case 2:
                     transferAmountBetweenUsers();
-                    Sleep(1000);
                     break; 
 
                 case 3: // Option pour la déconnexion

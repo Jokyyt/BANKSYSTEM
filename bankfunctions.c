@@ -171,8 +171,12 @@ int createAccount(User *user) {
 
             cJSON_Delete(root); // Libérer la mémoire de l'objet cJSON
             
-            printf("Fetching account details.....\n");
-            printf("Account created successfully!\n");
+            printf("\nFetching account details.....\n");
+            Sleep(1000);
+            printf("\nAccount created successfully!\n");
+            printf("\n================================================================\n\n");
+            printf("CURRENT LOGIN...\n");
+
             return 0; // Ou tout autre code de succès que vous préférez
         } else {
             printf("Username already in use for this account. Please try again");
@@ -385,7 +389,7 @@ int transfer(User *sender, User *receiver, float amount) {
         Sleep(2000);
         printf("AMOUNT SUCCESSFULLY TRANSFERRED....\n");
 
-        printf("\nPress ENTER to return to Home Menu...\n");
+        printf("\nPress ENTER to return to Home Menu...");
         getch();  // Attend que l'utilisateur appuie sur Enter
         return 0;
     } else {
@@ -396,17 +400,16 @@ int transfer(User *sender, User *receiver, float amount) {
 
 
 
-
 // Fonction d'affichage des informations de l'utilisateur
 void get_infos(User *user) {
     printf("--------------------------------\n");
-    printf("---- MY INFOS ----\n");
+    printf("----------- MY INFOS -----------\n");
     printf("--------------------------------\n");
     printf("MY ID: %s\n", user->ID);
     printf("USERNAME: %s\n", user->username);
     printf("PASSWORD: %s\n", user->password);
     printf("SOLDE: %.2f $\n", user->solde);
-    printf("\nPress ENTER to return to Home Menu...\n");
+    printf("\nPress ENTER to return to Home Menu...");
     getch();  // Attend que l'utilisateur appuie sur Enter
 }
 
