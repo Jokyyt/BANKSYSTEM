@@ -11,6 +11,8 @@ typedef struct User {
     double solde;
 } User;
 
+void SetColor(int ForgC);
+
 // User constructor
 int checkID(const char *ID);
 char *generateRandomID();

@@ -6,6 +6,46 @@
 #include <stdbool.h>
 #include "Librairies\cJSON\cJSON.h"
 
+// Définir des couleurs pour la console
+void SetColor(int ForgC) {
+    WORD wColor;
+    HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    CONSOLE_SCREEN_BUFFER_INFO csbi;
+
+    if (GetConsoleScreenBufferInfo(hStdOut, &csbi)) {
+        wColor = (csbi.wAttributes & 0xF0) + (ForgC & 0x0F);
+        SetConsoleTextAttribute(hStdOut, wColor);
+    }
+}
+
+// Fonction pour afficher le menu principal
+void displayMainMenu() {
+    SetColor(15); // Blanc
+    printf("\n******************************************\n");
+    printf("*      WELCOME TO BANK ACCOUNT SYSTEM    *\n");
+    printf("******************************************\n");
+    printf("1.... ALREADY A USER? SIGN IN\n");
+    printf("2.... CREATE A BANK ACCOUNT\n");
+    printf("3.... EXIT\n\n");
+    printf("ENTER YOUR CHOICE: ");
+    Sleep(1000);
+}
+
+// Fonction pour afficher le menu utilisateur
+void displayUserMenu() {
+    SetColor(11); // Blanc
+    printf("\n HOME\n");
+    printf("******\n\n");
+    printf("1....CHECK INFOS\n");
+    printf("2....TRANSFER MONEY\n");
+    printf("3....LOG OUT\n");
+    printf("4....EXIT\n\n");
+    printf("ENTER YOUR CHOICE: ");
+    Sleep(1000); 
+}
+
+
+
 
 int main() {
     User currentUser;
@@ -14,19 +54,17 @@ int main() {
 
     while (1) {
         if (!connected) {
-            Sleep(1000);
-            printf("1. Log in\n2. Create an account\n3. Exit\nChoose an option (number) : ");
+            displayMainMenu();
             scanf("%d", &choix);
 
             switch (choix) {
                 case 1:
                     if (Login(&currentUser) == 0) {
                         connected = 1;
-                        printf("You are now logged in!\n");
                         Sleep(1000);
                     } else {
                         Sleep(1000);
-                        printf("Connection error\n");
+                        printf("CONNECTION ERROR\n");
                     }
                     break;
 
@@ -49,8 +87,7 @@ int main() {
                     break;
             }
         } else {
-            Sleep(1000);
-            printf("\n1. Consult Account\n2.\n3. Log out\n4. Exit\n5. Delete\nChoose an option (number) : ");
+            displayUserMenu();
             scanf("%d", &choix);
 
             switch (choix) {

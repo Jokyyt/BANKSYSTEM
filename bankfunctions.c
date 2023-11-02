@@ -75,8 +75,6 @@ int createAccount(User *user) {
         return 1;
     }
 
-    char username_input[21];
-    char password_input[21];
     int userExistsResult = 0; // Initialisation du résultat de vérification
 
     fseek(fichier, 0, SEEK_END);
@@ -106,14 +104,18 @@ int createAccount(User *user) {
         return -1;
     }
 
-    printf("NEW USER !!\n");
+    printf("!!!!!CREATE ACCOUNT!!!!!\n");
     cJSON *newUser = cJSON_CreateObject();
 
     do {
 
+        // Lire les données de l'utilisateur à créer
+        char username_input[21];
+        char password_input[21];
+
         do {
             printf("USERNAME : ");
-            scanf("%s", username_input);
+            scanf("%20s", username_input);
 
             // Vérifier si le mot de passe respecte les règles
             if (!verif_username_len(username_input)) {
@@ -124,7 +126,7 @@ int createAccount(User *user) {
 
         do {
             printf("PASSWORD : ");
-            scanf("%49s", password_input);
+            scanf("%20s", password_input);
 
             // Vérifier si le mot de passe respecte les règles
             if (!verif_password(password_input)) {
@@ -137,16 +139,20 @@ int createAccount(User *user) {
         // ... (code pour vérifier l'existence de l'utilisateur, comme vous l'avez déjà)
 
         if (userExistsResult == 0) {
-            user->username = strdup(username_input);
-            user->password = strdup(password_input);
             cJSON_AddStringToObject(newUser, "ID", generateRandomID());
             cJSON_AddStringToObject(newUser, "username", username_input);
             cJSON_AddStringToObject(newUser, "password", password_input);
             cJSON_AddNumberToObject(newUser, "solde", 0.0); // Solde initial à 0
             
 
-            cJSON_AddItemToArray(cJSON_GetObjectItem(root, "users"), newUser);
+            user->ID = strdup(cJSON_GetObjectItem(newUser, "ID")->valuestring);
+            user->username = strdup(username_input);
+            user->password = strdup(password_input);
+            user->solde = 0.0; // Initialiser le solde à 0.0
 
+            cJSON_AddItemToArray(userArray, newUser); // Ajouter le nouvel utilisateur au tableau d'utilisateurs
+
+            // Réécrire le fichier JSON avec le nouvel utilisateur
             fichier = fopen(JSON_FILE_PATH, "w"); // Réouvrir en mode écriture
             if (fichier == NULL) {
                 perror(ERROR_OPEN_FILE_WRITE);
@@ -164,9 +170,12 @@ int createAccount(User *user) {
             fclose(fichier);
 
             cJSON_Delete(root); // Libérer la mémoire de l'objet cJSON
-
+            
+            printf("Fetching account details.....\n");
             printf("Account created successfully!\n");
             return 0; // Ou tout autre code de succès que vous préférez
+        } else {
+            printf("Username already in use for this account. Please try again");
         }
     } while (userExistsResult != 0);
 
@@ -178,6 +187,7 @@ int createAccount(User *user) {
 int Login(User *user) {
     char input_username[50];
     char input_password[50];
+    printf("==== LOG IN ====\n");
 
     printf("Enter your username: ");
     scanf("%49s", input_username);
@@ -189,6 +199,11 @@ int Login(User *user) {
     if (userFoundResult == 3) {
         user->username = strdup(input_username); // Assurez-vous d'allouer de la mémoire pour le champ username
         user->password = strdup(input_password); // Assurez-vous d'allouer de la mémoire pour le champ password
+        Sleep(1000);
+        printf("\n");
+        printf("LOGIN SUCCESSFUL....\n\n");
+        printf("Press ENTER to continue...");
+        getch();  // Attend que l'utilisateur appuie sur Enter
         return 0;
     } else if (userFoundResult == 1) {
         printf("Le username existe, mais le password n'existe pas.");
@@ -248,7 +263,10 @@ int checkInfos(User *user, const char *username, const char *password) {
         int passwordMatch = strncmp(password, storedPassword, strlen(password)) == 0;
 
         if (usernameMatch && passwordMatch) {
-            user->username = strdup(storedUsername); // Allouer et copier le nom d'utilisateur
+            user->ID = strdup(cJSON_GetObjectItem(userObj, "ID")->valuestring);
+            user->username = strdup(storedUsername);
+            user->password = strdup(storedPassword);
+            user->solde = cJSON_GetObjectItem(userObj, "solde")->valuedouble;
             cJSON_Delete(root);
             return 3; // Le username et le password existent.
         } else if (usernameMatch) {
@@ -304,11 +322,11 @@ int loadUserByID(User *user, const char *userID) {
         const char *storedID = cJSON_GetObjectItem(userObj, "ID")->valuestring;
 
         if (strcmp(userID, storedID) == 0) {
+            user->ID = strdup(cJSON_GetObjectItem(userObj, "ID")->valuestring);
             user->username = strdup(cJSON_GetObjectItem(userObj, "username")->valuestring);
             user->password = strdup(cJSON_GetObjectItem(userObj, "password")->valuestring);
             user->solde = cJSON_GetObjectItem(userObj, "solde")->valuedouble;
-            user->ID = strdup(cJSON_GetObjectItem(userObj, "ID")->valuestring);
-
+            
             cJSON_Delete(root);
             return 1; // Succès du chargement de l'utilisateur
         }
@@ -324,16 +342,22 @@ int transferAmountBetweenUsers() {
     User sender, receiver;
     float amount;
     char senderID[9], receiverID[9];
+    printf("\n");
+    printf("========================\n");
+    printf("---- TRANSFER MONEY ----\n");
+    printf("========================\n");
+    printf("\n");
 
-    printf("Enter the sender's ID: ");
+
+    printf("FROM (your ID): ");
     scanf("%8s", senderID);
 
-    printf("Enter the receiver's ID: ");
+    printf("TO (ID of person): ");
     scanf("%8s", receiverID);
 
     // Charger les détails de l'expéditeur et du destinataire à partir du fichier JSON en utilisant leurs ID
     if (loadUserByID(&sender, senderID) && loadUserByID(&receiver, receiverID)) {
-        printf("Enter the amount to transfer: ");
+        printf("ENTER THE AMOUNT TO BE TRANSFERRED: ");
         scanf("%f", &amount);
 
         // Appel de la fonction de transfert
@@ -353,8 +377,17 @@ int transfer(User *sender, User *receiver, float amount) {
         updateSoldeUser(sender);
         updateSoldeUser(receiver);
 
-        printf("Transfer of %.2f $ from %s to %s completed successfully.\n", amount, sender->username, receiver->username);
-        return 0; // Succès
+
+        printf("--------------------------------------------------------\n");
+        printf("--------------------------------------------------------\n");
+        printf("Transferring amount, Please wait..\n");
+        printf("****************************************\n");
+        Sleep(2000);
+        printf("AMOUNT SUCCESSFULLY TRANSFERRED....\n");
+
+        printf("\nPress ENTER to return to Home Menu...\n");
+        getch();  // Attend que l'utilisateur appuie sur Enter
+        return 0;
     } else {
         printf("Insufficient balance to complete this transfer.\n");
         return -1; // Échec du transfert
@@ -366,9 +399,15 @@ int transfer(User *sender, User *receiver, float amount) {
 
 // Fonction d'affichage des informations de l'utilisateur
 void get_infos(User *user) {
-    printf("Username: %s\n", user->username);
-    printf("Password: %s\n", user->password);
-    printf("Solde: %.2f $\n", user->solde);
+    printf("--------------------------------\n");
+    printf("---- MY INFOS ----\n");
+    printf("--------------------------------\n");
+    printf("MY ID: %s\n", user->ID);
+    printf("USERNAME: %s\n", user->username);
+    printf("PASSWORD: %s\n", user->password);
+    printf("SOLDE: %.2f $\n", user->solde);
+    printf("\nPress ENTER to return to Home Menu...\n");
+    getch();  // Attend que l'utilisateur appuie sur Enter
 }
 
 
@@ -504,7 +543,7 @@ void deleteUser(User *user) {
 
                 fclose(fichier);
                 cJSON_Delete(root);
-                printf("User deleted successfully!\n");
+                printf("USER DELETE SUCCESFULLY !\n");
                 return;
             }
         }
@@ -523,7 +562,7 @@ bool confirm_choice() {
     int tentatives = 0;
     
     while (tentatives < 3) {
-        printf("Are you sure you want to continue? (y/n) --> ");
+        printf("ARE YOU SURE YOU WANT TO CONTINUE ? (y/n) --> ");
         scanf("%s", choice);
         
         if (strcmp(choice, "y") == 0 || strcmp(choice, "Y") == 0 || strcmp(choice, "yes") == 0 || strcmp(choice, "Yes") == 0 || strcmp(choice, "YES") == 0) {
@@ -531,12 +570,13 @@ bool confirm_choice() {
         } else if (strcmp(choice, "n") == 0 || strcmp(choice, "N") == 0 || strcmp(choice, "no") == 0 || strcmp(choice, "No") == 0 || strcmp(choice, "NO") == 0) {
             return false;
         } else {
-            printf("Invalid choice. Please try again.\n");
+            printf("INVALID choice. Please try again.\n");
             tentatives++;
         }
     }
 
-    printf("Too many attempts. Return to menu.\n");
+    printf("Too many attempts. Return to HOME MENU...\n");
+    Sleep(1500);
     return false;
 
 }
