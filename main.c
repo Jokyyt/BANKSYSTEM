@@ -39,6 +39,7 @@ void displayUserMenu() {
     printf("1....CHECK INFOS\n");
     printf("2....TRANSFER MONEY\n");
     printf("3....LOG OUT\n");
+    printf("5....DELETE ACCOUNT\n");
     printf("4....EXIT\n\n");
     printf("ENTER YOUR CHOICE: ");
     Sleep(1000); 
@@ -93,6 +94,7 @@ int main() {
 
             switch (choix) {
                 case 1:
+                    Sleep(500);
                     get_infos(&currentUser);
                     break;
 
@@ -106,16 +108,16 @@ int main() {
                     connected = 0;
                     break;
 
-                case 4:
-                    printf("Thank you for using our service. Goodbye!\n");
-                    return 0; // Quitter de manière propre
-
-                case 5: // Option pour supprimer un utilisateur
+                case 4: // Option pour supprimer un utilisateur
                     deleteUser(&currentUser);
                     connected = 0; // Déconnecter l'utilisateur après la suppression
-                    printf("You are now logged out.\n");
-                    Sleep(1000);
+                    printf("REDIRECT TO LOGIN MENU...\n");
+                    Sleep(1500);
                     break;
+
+                case 5: 
+                    printf("Thank you for using our service. Goodbye!\n");
+                    return 0; // Quitter de manière propre
 
                 default:
                     printf("Invalid option. Try again.\n");

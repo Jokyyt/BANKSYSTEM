@@ -4,6 +4,7 @@
 #include <string.h>
 #include <windows.h>
 #include <errno.h>
+#include <conio.h>
 #include <stdbool.h>
 #include "Librairies\cJSON\cJSON.h"
 
@@ -554,7 +555,7 @@ void deleteUser(User *user) {
 
                 fclose(fichier);
                 cJSON_Delete(root);
-                printf("USER DELETE SUCCESFULLY !\n");
+                printf("YOUR ACCOUNT HAS BEEN DELETED...\n");
                 return;
             }
         }
