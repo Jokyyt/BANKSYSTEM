@@ -1,6 +1,6 @@
 ## Lancement :
 ```
-make && ./bank_prgram
+make && ./bank_program
 ```
 
 ## Explication du système  
