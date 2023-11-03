@@ -684,3 +684,20 @@ void deleteIDFromFile(const char *id_to_delete) {
     remove("DATA/id_used.txt");
     rename("DATA/temp.txt", "DATA/id_used.txt");
 }
+
+// Fonction pour la saisie sécurisée d'un entier
+int getIntegerInput() {
+    int input;
+    int validInput = 0;
+
+    while (!validInput) {
+        if (scanf("%d", &input) == 1) {
+            validInput = 1; // Sortir de la boucle si l'entrée est un entier
+        } else {
+            printf("WRONG TYPE. Please enter an integer: ");
+            fflush(stdin); // Effacer le buffer d'entrée
+        }
+    }
+
+    return input;
+}

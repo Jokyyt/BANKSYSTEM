@@ -6,7 +6,7 @@ Liste des Fonctions
 Créer un compte ✓ ==> createAccount()
 Se connecter à son compte ✓ ==> Login()
 Consulter le solde ✓ ==> get_infos()
-Clôturer le compte ✓ ==> deleteUser()
+Clôturer le compte ✓ ==> deleteUser() / deleteUserID()
 Confirmer son choix ✓ ==> confirm_choice()
 Restriction sur les inputs (username, password) ✓ ==> verif_username_len() / verif_password()
 Vérifier l'existence de noms d'utilisateur/mots de passe déjà utilisés ✓ ==> checkInfos()

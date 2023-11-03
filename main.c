@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <errno.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "Librairies\cJSON\cJSON.h"
 
 // Définir des couleurs pour la console
@@ -48,8 +49,6 @@ void displayUserMenu() {
 }
 
 
-
-
 int main() {
     User currentUser;
     int choix;
@@ -58,8 +57,8 @@ int main() {
     while (1) {
         if (!connected) {
             displayMainMenu();
-            scanf("%d", &choix);
-
+            choix = getIntegerInput();
+            
             switch (choix) {
                 case 1:
                     if (Login(&currentUser) == 0) {
@@ -92,7 +91,7 @@ int main() {
             }
         } else {
             displayUserMenu();
-            scanf("%d", &choix);
+            choix = getIntegerInput();
 
             switch (choix) {
                 case 1:

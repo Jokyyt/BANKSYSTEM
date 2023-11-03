@@ -12,6 +12,7 @@ typedef struct User {
 } User;
 
 void SetColor(int ForgC);
+int getIntegerInput();
 
 // User constructor
 int checkID(const char *ID);
