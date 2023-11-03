@@ -7,8 +7,14 @@ CFLAGS = -Wall -Wextra
 # Répertoires contenant les fichiers source
 SRC_DIRS = main bankfunctions
 
+# Ajout des nouveaux fichiers source
+SRC_DIRS += bankfunctions
+
 # Recherche des fichiers source dans les répertoires
 SOURCES = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)/*.c))
+
+# Ajout des nouveaux fichiers source
+SOURCES += $(wildcard bankfunctions/*.c)
 
 # Noms des fichiers objets générés
 OBJECTS = $(SOURCES:.c=.o)

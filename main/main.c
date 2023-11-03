@@ -1,4 +1,7 @@
-#include "..\bankfunctions\bankfunctions.h"
+#include "..\bankfunctions\bank_system.h"
+#include "..\bankfunctions\general_utilities.h"
+#include "..\bankfunctions\user_management.h"
+#include "..\bankfunctions\verification.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
@@ -6,6 +9,7 @@
 #include <stdbool.h>
 #include <ctype.h>
 #include "..\Librairies\cJSON\cJSON.h"
+
 
 // Définir des couleurs pour la console
 void SetColor(int ForgC) {
