@@ -5,12 +5,10 @@ Ce projet de programmation en langage C vise à simuler un système bancaire sim
 Liste des Fonctions
 Créer un compte ✓ ==> createAccount()
 Se connecter à son compte ✓ ==> Login()
-Retirer de l'argent ✓ ==> subtractsolde()
-Déposer de l'argent ✓ ==> addsolde()
 Consulter le solde ✓ ==> get_infos()
 Clôturer le compte ✓ ==> deleteUser()
 Confirmer son choix ✓ ==> confirm_choice()
 Restriction sur les inputs (username, password) ✓ ==> verif_username_len() / verif_password()
 Vérifier l'existence de noms d'utilisateur/mots de passe déjà utilisés ✓ ==> checkInfos()
-Effectuer des virements entre comptes ✓ ==> transferAmountBetweenUsers()
+Effectuer des virements entre comptes ✓ ==> transferAmountBetweenUsers() / transfer()
 Générateur d'ID pour chaque compte ✓ ==> generateRandomID() / checkID()
