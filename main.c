@@ -21,6 +21,7 @@ void SetColor(int ForgC) {
 // Fonction pour afficher le menu principal
 void displayMainMenu() {
     SetColor(15); // Blanc
+    printf("\n");
     printf("\n******************************************\n");
     printf("*      WELCOME TO BANK ACCOUNT SYSTEM    *\n");
     printf("******************************************\n");
@@ -34,13 +35,14 @@ void displayMainMenu() {
 // Fonction pour afficher le menu utilisateur
 void displayUserMenu() {
     SetColor(11); // Blanc
+    printf("\n");
     printf("\n HOME\n");
     printf("******\n\n");
     printf("1....CHECK INFOS\n");
     printf("2....TRANSFER MONEY\n");
     printf("3....LOG OUT\n");
-    printf("5....DELETE ACCOUNT\n");
-    printf("4....EXIT\n\n");
+    printf("4....DELETE ACCOUNT\n");
+    printf("5....EXIT\n\n");
     printf("ENTER YOUR CHOICE: ");
     Sleep(1000); 
 }

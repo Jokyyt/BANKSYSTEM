@@ -536,6 +536,7 @@ void deleteUser(User *user) {
 
         if (strcmp(user->username, storedUsername) == 0) {
             if (confirm_choice()) {
+                deleteIDFromFile(user->ID);
                 cJSON_DeleteItemFromArray(userArray, i);
 
                 fichier = fopen(JSON_FILE_PATH, "w");
@@ -650,4 +651,36 @@ int checkID(const char *ID) {
 
     fclose(fichier); // Fermer le fichier après utilisation
     return 0; // L'ID est disponible
+}
+
+/*
+Cette fonction prend l'ID à supprimer en paramètre et parcourt le fichier used_id.txt.
+Si l'ID correspond à celui qui doit être supprimé, il ne le copie pas dans un fichier temporaire.
+Ensuite, il supprime le fichier d'origine et renomme le fichier temporaire avec le nom du fichier d'origine, éliminant ainsi l'ID spécifique.
+*/
+
+void deleteIDFromFile(const char *id_to_delete) {
+    FILE *file = fopen("DATA/id_used.txt", "r");
+    FILE *temp_file = fopen("DATA/temp.txt", "w");
+
+    if (file == NULL || temp_file == NULL) {
+        printf("Erreur lors de l'ouverture des fichiers.\n");
+        exit(1);
+    }
+
+    char line[50]; // Vous pouvez ajuster la taille en fonction de vos besoins
+
+    while (fgets(line, sizeof(line), file)) {
+        line[strcspn(line, "\n")] = 0; // Supprimer le saut de ligne
+
+        if (strcmp(id_to_delete, line) != 0) {
+            fprintf(temp_file, "%s\n", line);
+        }
+    }
+
+    fclose(file);
+    fclose(temp_file);
+
+    remove("DATA/id_used.txt");
+    rename("DATA/temp.txt", "DATA/id_used.txt");
 }

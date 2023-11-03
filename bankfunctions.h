@@ -34,6 +34,7 @@ int transferAmountBetweenUsers();
 int transfer(User *sender, User *receiver, float amount);
 
 // Fonctions d'administration du compte
+void deleteIDFromFile(const char *id_to_delete);
 void deleteUser(User *user);
 bool confirm_choice();
 
