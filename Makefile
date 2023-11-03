@@ -17,7 +17,7 @@ OBJECTS = $(SOURCES:.c=.o)
 EXECUTABLE = bank_program
 
 # Chemin vers la bibliothèque libjson.a
-LIBJSON = libjson.a
+LIBJSON = lib/libjson.a
 
 # Chemin vers la bibliothèque cJSON
 CJSON_LIB = -L./Librairies/cJSON -lcjson
