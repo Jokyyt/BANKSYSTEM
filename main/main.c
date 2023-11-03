@@ -1,11 +1,11 @@
-#include "bankfunctions.h"
+#include "..\bankfunctions\bankfunctions.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
 #include <errno.h>
 #include <stdbool.h>
 #include <ctype.h>
-#include "Librairies\cJSON\cJSON.h"
+#include "..\Librairies\cJSON\cJSON.h"
 
 // Définir des couleurs pour la console
 void SetColor(int ForgC) {

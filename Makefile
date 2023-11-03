@@ -4,17 +4,20 @@ CC = gcc
 # Options de compilation
 CFLAGS = -Wall -Wextra
 
-# Chemin vers les répertoires des fichiers source
-SRC_DIR = main bankfunctions
+# Répertoires contenant les fichiers source
+SRC_DIRS = main bankfunctions
 
-# Noms des fichiers source (en tenant compte des répertoires)
-SOURCES = $(wildcard $(addsuffix /*.c, $(SRC_DIR)))
+# Recherche des fichiers source dans les répertoires
+SOURCES = $(foreach dir, $(SRC_DIRS), $(wildcard $(dir)/*.c))
 
-# Noms des fichiers objets générés (en tenant compte des répertoires)
+# Noms des fichiers objets générés
 OBJECTS = $(SOURCES:.c=.o)
 
 # Nom du binaire final
 EXECUTABLE = bank_program
+
+# Ancien nom du binaire (après compilation)
+OLD_EXECUTABLE = bank_program.exe
 
 # Chemin vers la bibliothèque libjson.a
 LIBJSON = lib/libjson.a
@@ -22,12 +25,13 @@ LIBJSON = lib/libjson.a
 # Chemin vers la bibliothèque cJSON
 CJSON_LIB = -L./Librairies/cJSON -lcjson
 
-# Règle par défaut
+# Cible par défaut
 all: $(EXECUTABLE)
 
 # Compilation du binaire
 $(EXECUTABLE): $(OBJECTS)
 	$(CC) $(CFLAGS) -o $@ $^ $(LIBJSON) $(CJSON_LIB)
+	@mv $(OLD_EXECUTABLE) $(EXECUTABLE) 2>/dev/null || true
 
 # Compilation des fichiers objets
 %.o: %.c

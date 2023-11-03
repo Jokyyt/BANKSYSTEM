@@ -6,7 +6,7 @@
 #include <errno.h>
 #include <conio.h>
 #include <stdbool.h>
-#include "Librairies\cJSON\cJSON.h"
+#include "..\Librairies\cJSON\cJSON.h"
 
 // Définir des constantes pour les noms de fichiers
 #define JSON_FILE_PATH "DATA/users.json"

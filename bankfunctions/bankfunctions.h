@@ -2,7 +2,7 @@
 #define BANKFUNCTIONS_H
 
 #include <stdbool.h>
-#include "Librairies\cJSON\cJSON.h"
+#include "..\Librairies\cJSON\cJSON.h"
 
 typedef struct User {
     char *ID;
